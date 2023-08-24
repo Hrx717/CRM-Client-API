@@ -1,25 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const {insertUser, getUserByEmail} = require('../model/UserModel/User.model');
-
-//bcrypt
-const bcryptjs = require('bcryptjs');
-//hashPassword to save in db
-const hashPassword = async (plainPassword) => {
-    const newPassword = await bcryptjs.hash(plainPassword, 10);
-    return newPassword;
-}
-//compare dbhasPassword
-const comparePassword = (plainPassword, hashedPass) => {
-    return new Promise((resolve, reject) => {
-        bcryptjs.compare(plainPassword, hashedPass, (err, res) => {
-            if (err){
-                reject(err);
-            }
-            resolve(res);
-        });
-    });
-}
+const {hashPassword, comparePassword} = require('../helper/bcrypt.helper');
+const {crateAccessJWT, crateRefreshJWT} = require('../helper/jwt.helper');
 
 //routers
 router.get('/', (req,res) => {
@@ -56,12 +39,18 @@ router.post('/login', async (req,res) => {
     try {
         const result = await getUserByEmail(email);
         if(result==null) {
-            return res.json({message: 'Invalid email or Password!'})
+            return res.json({message: 'Invalid email or Password!'});
         }
         const passFromDb = result.password;
         const cmpresult = await comparePassword(password, passFromDb);
         console.log(cmpresult);
-        res.json({message: 'user exists', result});
+        if(!cmpresult) {
+            return res.json({message: 'Invalid email or Password!'});
+        }
+        
+        const accessJWT = await crateAccessJWT(result.email, `${result._id}`);
+        const refreshJWT = await crateRefreshJWT(result.email);
+        res.json({status:'success', message:'login succesfuly', accessJWT: accessJWT});
     }
     catch(error) {
         console.log('error->', error.message);
