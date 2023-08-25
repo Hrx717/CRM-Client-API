@@ -1,13 +1,15 @@
 const express = require('express');
 const router = express.Router();
-const {insertUser, getUserByEmail,getUserById, updatePassword} = require('../model/UserModel/User.model');
+const {insertUser, getUserByEmail,getUserById, updatePassword, storeUserRefereshJWT} = require('../model/UserModel/User.model');
 const {hashPassword, comparePassword} = require('../helper/bcrypt.helper');
 const {createAccessJWT, createRefreshJWT} = require('../helper/jwt.helper');
 const {userAuthorization} = require('../middlewares/authorization.middleware');
 const { setPasswordResetPin, getPinByEmailPin, deletePin } = require('../model/ResetPinModel/ResetPin.model');
 const { emailProcessor } = require('../helper/email.helper');
+const {resetPassValidation, updatePassValidation} = require('../middlewares/formValidation.middleware');
+const { deleteJWT } = require('../helper/redis.helper');
 
-//routers
+//check for authentication of user
 router.get('/', userAuthorization, async (req,res) => {
     console.log(req.userId);
     const _id = req.userId;
@@ -64,8 +66,8 @@ router.post('/login', async (req,res) => {
     }
 });
 
-//reset password - check email, create pin and mail pin..
-router.post('/reset-password', async (req,res) => {
+//reset password - create pin and mail pin..
+router.post('/reset-password',resetPassValidation, async (req,res) => {
     const {email} = req.body;
     const user = await getUserByEmail(email);
     if(user && user._id) {
@@ -82,8 +84,8 @@ router.post('/reset-password', async (req,res) => {
     return res.json({status:'error', message: 'user not found'});
 });
 
-//reset password - save new password to db
-router.patch('/reset-password', async (req,res) => {
+//reset password - update password
+router.patch('/reset-password',updatePassValidation, async (req,res) => {
     const {email, pin, newPassword} = req.body;
     const getPin = await getPinByEmailPin(email, pin);
     if(getPin) {
@@ -108,6 +110,21 @@ router.patch('/reset-password', async (req,res) => {
     }
 
     return res.json({status: 'error', message: 'Somthing went wrong, Try again later'});
+});
+
+//user logout and inValidate tokens
+router.delete('/logout', userAuthorization, async (req,res) => {
+    const {authorization} = req.headers;
+    const _id = req.userId; //coming from userAuthorization middleware
+    //delete token from redis
+    await deleteJWT(authorization);
+    //delete token from db
+    const result = await storeUserRefereshJWT('', _id);
+    if(result) {
+        return res.json({status: 'success', message: 'logout successfully'});
+    }
+
+    return res.json({status: 'error', message: 'something went wrong!'});
 });
 
 module.exports = router;
