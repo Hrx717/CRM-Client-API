@@ -29,8 +29,20 @@ const UserSchema = new mongoose.Schema({
         type: String,
         maxlength: 100,
         required: true
+    },
+    refreshJWT: {
+        token: {
+            type: String,
+            default: '',
+            maxlength: 500
+        },
+        addedAt: {
+            type: Date,
+            required: true,
+            default: Date.now()
+        }
     }
-})
+});
 
 const User = mongoose.model('User', UserSchema);
 module.exports = User;

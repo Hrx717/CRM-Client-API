@@ -1,14 +1,14 @@
 const jwt = require('jsonwebtoken');
-const {setJWT, getJWT} = require('./redis.helper')
+const {setJWT, getJWT} = require('./redis.helper');
+const {storeUserRefereshJWT} = require('../model/UserModel/User.model');
 
-const crateAccessJWT = async (email, _id) => {
+const createAccessJWT = async (email, _id) => {
     try {
-      const accessJWT = await jwt.sign({ email }, process.env.JWT_ACCESS_SECRET, {
+      const accessJWT = jwt.sign({ email }, process.env.JWT_ACCESS_SECRET, {
         expiresIn: "15m",
       });
 
       await setJWT(accessJWT, _id);
-      console.log(accessJWT);
       return Promise.resolve(accessJWT);
     } 
     catch (error) {
@@ -16,11 +16,13 @@ const crateAccessJWT = async (email, _id) => {
     }
 };
 
-const crateRefreshJWT = async (email, _id) => {
+const createRefreshJWT = async (email, _id) => {
     try {
       const refreshJWT = jwt.sign({ email }, process.env.JWT_REFRESH_SECRET, {
         expiresIn: "30d",
       });
+
+      await storeUserRefereshJWT(refreshJWT, _id);
       return Promise.resolve(refreshJWT);
     } 
     catch (error) {
@@ -28,4 +30,27 @@ const crateRefreshJWT = async (email, _id) => {
     }
 };
 
-module.exports = {crateAccessJWT,crateRefreshJWT};
+const verifyAccessJWT = (userJWT) => {
+    try {
+      return Promise.resolve(jwt.verify(userJWT, process.env.JWT_ACCESS_SECRET));
+    }
+    catch(error) {
+      return Promise.resolve(error);
+    }
+}
+
+const verifyRefreshJWT = (userJWT) => {
+  try {
+    return Promise.resolve(jwt.verify(userJWT, process.env.JWT_REFRESH_SECRET));
+  }
+  catch(error) {
+    return Promise.resolve(error);
+  }
+}
+
+module.exports = {
+  createAccessJWT,
+  createRefreshJWT,
+  verifyAccessJWT,
+  verifyRefreshJWT
+};

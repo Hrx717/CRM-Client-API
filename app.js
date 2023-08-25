@@ -32,12 +32,16 @@ app.use(bodyParser.json());
 //load routers
 const userRouter = require('./src/routers/user.router');
 const ticketRouter = require('./src/routers/ticket.router');
+const tokensRouter = require('./src/routers/tokens.router');
 
 //handle user routes
 app.use('/v1/user', userRouter);
 
 //handle ticket routes
 app.use('/v1/ticket', ticketRouter);
+
+//handle tokens routes
+app.use('/v1/tokens', tokensRouter);
 
 //handle page not found error
 app.get('*', (req,res) => {

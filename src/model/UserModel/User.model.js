@@ -21,4 +21,34 @@ const getUserByEmail = (email) => {
     });
 }
 
-module.exports = {insertUser, getUserByEmail};
+const getUserById = (_id) => {
+    return new Promise((resolve, reject) => {
+        User.findById({_id})
+        .then((data)=>{
+            resolve(data);
+        })
+        .catch((err)=>{
+            reject(err);
+        });
+    });
+}
+
+const storeUserRefereshJWT = async (token, _id) => {
+    try {
+        const updated = await User.findByIdAndUpdate({_id}, 
+            {'refreshJWT.token': token, 'refreshJWT.addedAt' : Date.now()}, {new: true});
+        console.log(updated);
+        return Promise.resolve(updated);
+    }
+    catch(error) {
+        console.log(error);
+        return Promise.reject(error);
+    }
+}
+
+module.exports = {
+    insertUser, 
+    getUserByEmail,
+    getUserById,
+    storeUserRefereshJWT
+};

@@ -1,12 +1,17 @@
 const express = require('express');
 const router = express.Router();
-const {insertUser, getUserByEmail} = require('../model/UserModel/User.model');
+const {insertUser, getUserByEmail,getUserById} = require('../model/UserModel/User.model');
 const {hashPassword, comparePassword} = require('../helper/bcrypt.helper');
-const {crateAccessJWT, crateRefreshJWT} = require('../helper/jwt.helper');
+const {createAccessJWT, createRefreshJWT} = require('../helper/jwt.helper');
+const {userAuthorization} = require('../middlewares/authorization.middleware');
+const { setPasswordResetPin } = require('../model/ResetPinModel/ResetPin.model');
 
 //routers
-router.get('/', (req,res) => {
-    res.json({message: "return from user-router"})
+router.get('/', userAuthorization, async (req,res) => {
+    console.log(req.userId);
+    const _id = req.userId;
+    const user = await getUserById(_id);
+    res.json({message: "return from user-router", user});
 });
 
 //sign-up(new user) router
@@ -48,14 +53,26 @@ router.post('/login', async (req,res) => {
             return res.json({message: 'Invalid email or Password!'});
         }
         
-        const accessJWT = await crateAccessJWT(result.email, `${result._id}`);
-        const refreshJWT = await crateRefreshJWT(result.email);
-        res.json({status:'success', message:'login succesfuly', accessJWT: accessJWT});
+        const accessJWT = await createAccessJWT(result.email, `${result._id}`);
+        const refreshJWT = await createRefreshJWT(result.email,`${result._id}`);
+        res.json({status:'success', message:'login succesfuly', accessJWT: accessJWT,refreshJWT: refreshJWT});
     }
     catch(error) {
         console.log('error->', error.message);
         res.json({status: 'error', message: error.message});
     }
+});
+
+//reset password
+router.post('/reset-password', async (req,res) => {
+    const {email} = req.body;
+    const user = await getUserByEmail(email);
+    if(user && user._id) {
+        const savepin = await setPasswordResetPin(email);
+        return res.json({message:'saved', savepin});
+    }
+
+    return res.json({status:'error', message: 'user not found'});
 });
 
 module.exports = router;

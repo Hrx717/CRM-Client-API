@@ -5,24 +5,42 @@ const setJWT = async (key, value) => {
     await client.connect();
     try {
         await client.set(key, value);
+        await client.disconnect();
+        return Promise.resolve('stored');
     }
     catch(error) {
         console.log(error);
+        await client.disconnect();
+        return Promise.resolve(error);
     }
 }
 
-const getJWT = (key) => {
-    return new Promise((resolve, reject) => {
-        try {
-            const value = client.get(key, (err, res) => {
-                if(err) reject(err);
-                resolve(res);
-            });
-        }
-        catch(error) {
-            reject(error);
-        }
-    });
+const getJWT = async (key) => {
+    await client.connect();
+    try {
+        const value = await client.get(key);
+        await client.disconnect();
+        return Promise.resolve(value);
+    }
+    catch(error) {
+        console.log(error);
+        await client.disconnect();
+        return Promise.resolve(error);
+    }
 }
 
-module.exports = {setJWT, getJWT};
+const deleteJWT = async (key) => {
+    await client.connect();
+    try {
+        const value = await client.del(key);
+        await client.disconnect();
+        return Promise.resolve(value);
+    }
+    catch(error) {
+        console.log(error);
+        await client.disconnect();
+        return Promise.resolve(error);
+    }
+}
+
+module.exports = {setJWT, getJWT, deleteJWT};
