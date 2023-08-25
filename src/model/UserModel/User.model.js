@@ -46,9 +46,23 @@ const storeUserRefereshJWT = async (token, _id) => {
     }
 }
 
+const updatePassword =  (email, hashedPass) => {
+    return new Promise((resolve, reject) => {
+        User.findOneAndUpdate({email}, {password: hashedPass}, {new: true})
+        .then((data)=>{
+            console.log(data);
+            resolve(data);
+        })
+        .catch((err)=>{
+            reject(err);
+        });
+    });
+}
+
 module.exports = {
     insertUser, 
     getUserByEmail,
     getUserById,
-    storeUserRefereshJWT
+    storeUserRefereshJWT,
+    updatePassword
 };

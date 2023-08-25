@@ -12,6 +12,11 @@ const ResetPinSchema = new mongoose.Schema({
         maxlength: 50,
         required: true
     },
+    addedAt:{
+        type: Date,
+        required: true,
+        default: Date.now()
+    }
 });
 
 const ResetPin = mongoose.model('reset_pin', ResetPinSchema);
