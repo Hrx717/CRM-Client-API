@@ -2,16 +2,18 @@ const express = require('express');
 const { insertTicket, getAllTickets, getTicketById,
     updateClientReply, updateStatusClose, deleteTicket } = require('../model/TicketModel/Ticket.model');
 const { userAuthorization } = require('../middlewares/authorization.middleware');
+const { createNewTicketValidation, replyTicketMessageValidation } = require('../middlewares/formValidation.middleware');
 
 const router = express.Router();
 
 //save a new ticket of spcific user
-router.post('/', userAuthorization ,async (req,res) => {
-    const {subject, sender, message} = req.body;
+router.post('/', userAuthorization, createNewTicketValidation ,async (req,res) => {
+    const {subject, sender, message, issueDate} = req.body;
     const _id = req.userId;
     const ticketObj = {
         clientId: _id,
         subject,
+        openAt: issueDate,
         conversations: [
             {
                 sender,
@@ -52,7 +54,7 @@ router.get('/:ticketId',userAuthorization, async (req,res) => {
 });
 
 //update ticket details i.e., reply messages
-router.put('/:ticketId', userAuthorization, async (req,res) => {
+router.put('/:ticketId',replyTicketMessageValidation, userAuthorization, async (req,res) => {
     const {message, sender} = req.body;
     const {ticketId} = req.params;
     const userId = req.userId;
