@@ -1,12 +1,10 @@
 const Joi = require('joi');
 
 const email = Joi.string().email({
-    minDomainSegments: 2,
-    tlds: {allow: ['com', 'net']}
-});
-
-const pin = Joi.number().min(6).max(6);
-const newPassword = Joi.string().alphanum().min(6).max(30).required();
+	minDomainSegments: 2, tlds: { allow: ['com', 'net']}
+})
+const pin = Joi.number().min(6);
+const newPassword = Joi.string().min(6).max(30).required();
 
 const shortStr = Joi.string().min(2).max(50);
 const longStr = Joi.string().min(2).max(1000);
@@ -77,7 +75,7 @@ const replyTicketMessageValidation = (req, res, next) => {
 
 module.exports = {
 	newUserValidation,
-    resetPassValidation,
+	resetPassValidation,
     updatePassValidation,
     createNewTicketValidation,
     replyTicketMessageValidation

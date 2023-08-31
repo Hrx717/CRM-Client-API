@@ -6,7 +6,7 @@ const {createAccessJWT, createRefreshJWT} = require('../helper/jwt.helper');
 const {userAuthorization} = require('../middlewares/authorization.middleware');
 const { setPasswordResetPin, getPinByEmailPin, deletePin } = require('../model/ResetPinModel/ResetPin.model');
 const { emailProcessor } = require('../helper/email.helper');
-const {newUserValidation, resetPassValidation, updatePassValidation} = require('../middlewares/formValidation.middleware');
+const {newUserValidation,resetPassValidation, updatePassValidation} = require('../middlewares/formValidation.middleware');
 const { deleteJWT } = require('../helper/redis.helper');
 
 //check for authentication of user
