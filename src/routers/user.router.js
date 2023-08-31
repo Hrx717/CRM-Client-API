@@ -6,7 +6,7 @@ const {createAccessJWT, createRefreshJWT} = require('../helper/jwt.helper');
 const {userAuthorization} = require('../middlewares/authorization.middleware');
 const { setPasswordResetPin, getPinByEmailPin, deletePin } = require('../model/ResetPinModel/ResetPin.model');
 const { emailProcessor } = require('../helper/email.helper');
-const {resetPassValidation, updatePassValidation} = require('../middlewares/formValidation.middleware');
+const {newUserValidation, resetPassValidation, updatePassValidation} = require('../middlewares/formValidation.middleware');
 const { deleteJWT } = require('../helper/redis.helper');
 
 //check for authentication of user
@@ -23,7 +23,7 @@ router.get('/', userAuthorization, async (req,res) => {
 });
 
 //sign-up(new user) router
-router.post('/', async (req,res) => {
+router.post('/',newUserValidation, async (req,res) => {
     const {name, company, address, phone, email, password} = req.body;
     try {
         const hashedPass = await hashPassword(password);
@@ -32,12 +32,17 @@ router.post('/', async (req,res) => {
             password: hashedPass
         }
         const result = await insertUser(newUserObj);
-        console.log('user saved-', result);
-        res.json({message: 'new user created', result});
+        // console.log('user saved-', result);
+        res.json({status: 'success',message: 'New user created, Now Please Login', result});
     }
     catch(error) {
         console.log('error->', error.message);
-        res.json({status: 'error', message: error.message});
+        if(error.message.includes('duplicate key error collection')) {
+            return res.json({status:'error', message: 'Email already registered, Please login'});
+        }
+        else {
+            return res.json({status: 'error', message: error.message});
+        }
     }
 });
 
