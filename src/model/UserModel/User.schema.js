@@ -30,6 +30,11 @@ const UserSchema = new mongoose.Schema({
         maxlength: 100,
         required: true
     },
+    user_type: {
+        type: String,
+        required: true,
+        default: 'client'
+    },
     refreshJWT: {
         token: {
             type: String,

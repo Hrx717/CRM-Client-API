@@ -15,6 +15,11 @@ const TicketSchema = new mongoose.Schema({
         required: true,
         default: Date.now()
     },
+    type: {
+        type: String,
+        required: true,
+        default: 'IT'
+    },
     status: {
         type: String,
         maxlength: 30,

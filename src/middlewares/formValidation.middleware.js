@@ -52,6 +52,7 @@ const createNewTicketValidation = (req, res, next) => {
 		sender: shortStr.required(),
 		message: longStr.required(),
 		issueDate: dt.required(),
+		type: shortStr.required()
 	});
 	const value = schema.validate(req.body);
 	if (value.error) {

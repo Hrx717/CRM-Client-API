@@ -8,12 +8,13 @@ const router = express.Router();
 
 //save a new ticket of spcific user
 router.post('/', userAuthorization, createNewTicketValidation ,async (req,res) => {
-    const {subject, sender, message, issueDate} = req.body;
+    const {subject, sender, message, issueDate, type} = req.body;
     const _id = req.userId;
     const ticketObj = {
         clientId: _id,
         subject,
         openAt: issueDate,
+        type,
         conversations: [
             {
                 sender,
@@ -33,7 +34,8 @@ router.post('/', userAuthorization, createNewTicketValidation ,async (req,res) =
 //get all tickets but for specific user only
 router.get('/',userAuthorization, async (req,res) => {
     const userId = req.userId;
-    const result = await getAllTickets(userId);
+    const {user_type} = req.headers;
+    const result = await getAllTickets(userId, user_type);
     if(result) {
         return res.json({status: 'success',result});
     }
@@ -87,6 +89,7 @@ router.delete('/:ticketId', userAuthorization, async (req,res) => {
 
     const result = await deleteTicket(ticketId, userId);
     if(result) {
+        console.log('deleted')
         return res.json({status: 'success',message: 'ticket-deleted'});
     }
 

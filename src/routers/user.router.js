@@ -14,11 +14,12 @@ router.get('/', userAuthorization, async (req,res) => {
     console.log(req.userId);
     const _id = req.userId;
     const user = await getUserById(_id);
-    const {name,email} = user;
+    const {name,email,user_type} = user;
     res.json({message: "return from user-router", user: {
         _id,
         name, 
-        email
+        email,
+        user_type
     }});
 });
 
